@@ -4,6 +4,7 @@ import com.vbank.transaction.client.AccountServiceClient;
 import com.vbank.transaction.config.AccountServiceProperties;
 import com.vbank.transaction.dto.request.TransferExecutionRequest;
 import com.vbank.transaction.dto.request.TransferInitiationRequest;
+import com.vbank.transaction.dto.response.TransactionHistoryResponse;
 import com.vbank.transaction.dto.response.TransferExecutionResponse;
 import com.vbank.transaction.dto.response.TransferInitiationResponse;
 import com.vbank.transaction.entity.Transaction;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -57,7 +59,12 @@ public class TransactionService {
         return transactionMapper.toTransferExecutionResponse(transaction);
     }
 
-    public List<Transaction> getTransactions(UUID accountId) {
-        return transactionRepository.findByFromAccountIdOrToAccountId(accountId, accountId);
+    public List<TransactionHistoryResponse> getTransactions(UUID accountId) {
+        List<Transaction> transactions = transactionRepository.findByFromAccountIdOrToAccountId(accountId, accountId);
+
+        return transactions
+                .stream()
+                .map(transactionMapper::toTransferHistoryResponse)
+                .toList();
     }
 }

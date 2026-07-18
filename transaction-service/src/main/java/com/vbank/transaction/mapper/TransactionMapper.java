@@ -1,6 +1,7 @@
 package com.vbank.transaction.mapper;
 
 import com.vbank.transaction.dto.request.TransferInitiationRequest;
+import com.vbank.transaction.dto.response.TransactionHistoryResponse;
 import com.vbank.transaction.dto.response.TransferExecutionResponse;
 import com.vbank.transaction.dto.response.TransferInitiationResponse;
 import com.vbank.transaction.entity.Transaction;
@@ -26,4 +27,9 @@ public interface TransactionMapper {
     TransferExecutionResponse toTransferExecutionResponse(
             Transaction transaction
     );
+
+
+    @Mapping(target = "transactionId", source = "id")
+    @Mapping(target = "deliveryStatus", expression = "java(transaction.getStatus().name())")
+    TransactionHistoryResponse toTransferHistoryResponse(Transaction transaction);
 }

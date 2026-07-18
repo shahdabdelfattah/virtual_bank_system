@@ -2,6 +2,7 @@ package com.vbank.transaction.controller;
 
 import com.vbank.transaction.dto.request.TransferExecutionRequest;
 import com.vbank.transaction.dto.request.TransferInitiationRequest;
+import com.vbank.transaction.dto.response.TransactionHistoryResponse;
 import com.vbank.transaction.dto.response.TransferExecutionResponse;
 import com.vbank.transaction.dto.response.TransferInitiationResponse;
 import com.vbank.transaction.entity.Transaction;
@@ -38,7 +39,7 @@ public class TransactionController {
     }
 
     @GetMapping("/accounts/{accountId}/transactions")
-    public List<Transaction> getAllTransactions(
+    public List<TransactionHistoryResponse> getTransactionHistory(
             @PathVariable UUID accountId
     ){
         return transactionService.getTransactions(accountId);
