@@ -30,8 +30,13 @@ public class TransactionService {
     public TransferInitiationResponse initiate(
             TransferInitiationRequest request
     ){
+        if (request.fromAccountId().equals(request.toAccountId())) {
+            throw new BusinessException("Sender and receiver accounts cannot be the same.");
+        }
+
         Transaction transaction = transactionMapper.toEntity(request);
         transaction = transactionRepository.save(transaction);
+
         return transactionMapper.toTransferInitiationResponse(transaction);
     }
 

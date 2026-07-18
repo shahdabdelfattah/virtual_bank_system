@@ -9,6 +9,7 @@ import com.vbank.transaction.entity.Transaction;
 import com.vbank.transaction.kafka.producer.LogProducer;
 import com.vbank.transaction.service.TransactionService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -50,7 +51,7 @@ public class TransactionController {
 
     @GetMapping("/accounts/{accountId}/transactions")
     public List<TransactionHistoryResponse> getTransactionHistory(
-            @PathVariable UUID accountId
+            @PathVariable @NotNull UUID accountId
     ){
         Map<String, UUID> request = Map.of("accountId", accountId);
         logProducer.publishRequest(request);
