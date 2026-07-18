@@ -29,18 +29,19 @@ public class TransactionController {
         return transactionService.initiate(request);
     }
 
-    @PostMapping("/transactions/transfer/execution")
+    @PostMapping("/transfer/execution")
+    @ResponseStatus(HttpStatus.OK)
     public TransferExecutionResponse executeTransfer(
             @Valid @RequestBody TransferExecutionRequest request
     ){
         return transactionService.execute(request);
     }
-//
-//    @GetMapping("/accounts/{accountId}/transactions")
-//    public List<Transaction> getAllTransactions(
-//            @PathVariable UUID accountId
-//    ){
-//        return transactionService.getTransactions(accountId);
-//    }
+
+    @GetMapping("/accounts/{accountId}/transactions")
+    public List<Transaction> getAllTransactions(
+            @PathVariable UUID accountId
+    ){
+        return transactionService.getTransactions(accountId);
+    }
 
 }

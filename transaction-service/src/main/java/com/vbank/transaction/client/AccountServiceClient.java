@@ -16,6 +16,8 @@ public class AccountServiceClient {
 
     private final AccountServiceProperties properties;
 
+
+    //wait for salma
     public void debit(UUID accountId, BigDecimal amount) {
         throw new UnsupportedOperationException("Account Service not implemented yet.");
     }
