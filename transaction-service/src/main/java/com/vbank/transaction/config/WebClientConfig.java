@@ -1,18 +1,20 @@
 package com.vbank.transaction.config;
 
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
-@EnableConfigurationProperties(AccountServiceProperties.class)
 public class WebClientConfig {
 
+    @Value("${account-service.base-url}")
+    private String accountServiceUrl;
+
     @Bean
-    public WebClient webClient(AccountServiceProperties properties) {
+    public WebClient webClient() {
         return WebClient.builder()
-                .baseUrl(properties.baseUrl())
+                .baseUrl(accountServiceUrl)
                 .build();
     }
 }

@@ -9,6 +9,8 @@ import com.vbank.transaction.enums.TransactionStatus;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import java.math.BigDecimal;
+
 @Mapper(componentModel = "spring", imports = TransactionStatus.class)
 public interface TransactionMapper {
 
@@ -29,7 +31,8 @@ public interface TransactionMapper {
     );
 
 
-    @Mapping(target = "transactionId", source = "id")
+    @Mapping(target = "transactionId", source = "transaction.id")
+    @Mapping(target = "amount", source = "signedAmount")
     @Mapping(target = "deliveryStatus", expression = "java(transaction.getStatus().name())")
-    TransactionHistoryResponse toTransferHistoryResponse(Transaction transaction);
+    TransactionHistoryResponse toTransferHistoryResponse(Transaction transaction, BigDecimal signedAmount);
 }

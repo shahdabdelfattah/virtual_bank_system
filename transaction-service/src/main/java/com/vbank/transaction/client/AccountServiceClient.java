@@ -1,6 +1,5 @@
 package com.vbank.transaction.client;
 
-import com.vbank.transaction.config.AccountServiceProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -13,8 +12,6 @@ import java.util.UUID;
 public class AccountServiceClient {
 
     private final WebClient webClient;
-
-    private final AccountServiceProperties properties;
 
 
     //wait for salma
