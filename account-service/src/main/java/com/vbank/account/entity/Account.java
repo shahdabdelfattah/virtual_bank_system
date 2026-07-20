@@ -3,6 +3,7 @@ package com.vbank.account.entity;
 import com.vbank.account.enums.AccountStatus;
 import com.vbank.account.enums.AccountType;
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -10,6 +11,11 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "accounts")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Account {
 
     @Id
@@ -43,12 +49,20 @@ public class Account {
     public void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
+        if (status == null) {
+            status = AccountStatus.ACTIVE;
+        }
+
+        if (balance == null) {
+            balance = BigDecimal.ZERO;
+        }
     }
 
     @PreUpdate
     public void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+
 
 
 }
