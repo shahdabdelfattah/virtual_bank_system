@@ -97,6 +97,32 @@ services:
     networks:
       - vbank-network
 
+  transaction-service:
+    build:
+      context: ./transaction-service
+    container_name: vbank-transaction-service
+
+    ports:
+      - "8083:8083"
+
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/transaction_db
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
+      ACCOUNT_SERVICE_BASE_URL: http://account-service:8082
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+    networks:
+      - vbank-network
+
 volumes:
   postgres_data:
 
