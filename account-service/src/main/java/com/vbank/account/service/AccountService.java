@@ -45,9 +45,19 @@ public class AccountService {
         );
     }
 
-//    public AccountResponseDTO getAccountById(UUID accountId) {
-//
-//    }
+    public AccountResponseDTO getAccountById(UUID accountId) {
+
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new RuntimeException("Account not found"));
+
+        return new AccountResponseDTO(
+                account.getId(),
+                account.getAccountNumber(),
+                account.getAccountType(),
+                account.getBalance(),
+                account.getStatus()
+        );
+    }
 //
 //    public List<AccountSummaryDTO> getAccountsByUserId(UUID userId) {
 //
