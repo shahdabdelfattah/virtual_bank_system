@@ -58,10 +58,25 @@ public class AccountService {
                 account.getStatus()
         );
     }
-//
-//    public List<AccountSummaryDTO> getAccountsByUserId(UUID userId) {
-//
-//    }
+
+    public List<AccountSummaryDTO> getAccountsByUserId(UUID userId) {
+
+        List<Account> accounts = accountRepository.findByUserId(userId);
+
+        if (accounts.isEmpty()) {
+            throw new RuntimeException("No accounts found for this user.");
+        }
+
+        return accounts.stream()
+                .map(account -> new AccountSummaryDTO(
+                        account.getId(),
+                        account.getAccountNumber(),
+                        account.getAccountType(),
+                        account.getBalance(),
+                        account.getStatus()
+                ))
+                .toList();
+    }
 //
 //    public MessageResponseDTO transferBalance(TransferRequestDTO request) {
 //
