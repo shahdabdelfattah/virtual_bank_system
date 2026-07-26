@@ -12,7 +12,9 @@ import com.vbank.account.enums.AccountStatus;
 import com.vbank.account.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
@@ -77,8 +79,40 @@ public class AccountService {
                 ))
                 .toList();
     }
-//
-//    public MessageResponseDTO transferBalance(TransferRequestDTO request) {
-//
-//    }
+
+    @Transactional
+    public MessageResponseDTO transferBalance(TransferRequestDTO request) {
+
+        Account fromAccount = accountRepository.findById(request.getFromAccountId())
+                .orElseThrow(() -> new RuntimeException("Sender account not found"));
+
+        Account toAccount = accountRepository.findById(request.getToAccountId())
+                .orElseThrow(() -> new RuntimeException("Receiver account not found"));
+
+        if (fromAccount.getBalance().compareTo(request.getAmount()) < 0) {
+            throw new RuntimeException("Insufficient balance");
+        }
+
+        if (request.getFromAccountId().equals(request.getToAccountId())) {
+            throw new RuntimeException("Cannot transfer to the same account.");
+        }
+
+        if (fromAccount.getStatus() != AccountStatus.ACTIVE ||
+                toAccount.getStatus() != AccountStatus.ACTIVE) {
+            throw new RuntimeException("Transfers are allowed only between active accounts.");
+        }
+
+        fromAccount.setBalance(
+                fromAccount.getBalance().subtract(request.getAmount())
+        );
+
+        toAccount.setBalance(
+                toAccount.getBalance().add(request.getAmount())
+        );
+
+        accountRepository.save(fromAccount);
+        accountRepository.save(toAccount);
+
+        return new MessageResponseDTO("Account updated successfully.");
+    }
 }

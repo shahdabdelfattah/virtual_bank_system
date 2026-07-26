@@ -2,9 +2,11 @@ package com.vbank.account.controller;
 
 
 import com.vbank.account.dto.request.CreateAccountRequestDTO;
+import com.vbank.account.dto.request.TransferRequestDTO;
 import com.vbank.account.dto.response.AccountResponseDTO;
 import com.vbank.account.dto.response.AccountSummaryDTO;
 import com.vbank.account.dto.response.CreateAccountResponseDTO;
+import com.vbank.account.dto.response.MessageResponseDTO;
 import com.vbank.account.service.AccountService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -34,5 +36,10 @@ public class AccountController {
     @GetMapping("/users/{userId}/accounts")
     public List<AccountSummaryDTO> getAccountsByUserId( @PathVariable UUID userId) {
         return accountService.getAccountsByUserId(userId);
+    }
+
+    @PutMapping("/accounts/transfer")
+    public MessageResponseDTO transferBalance( @RequestBody TransferRequestDTO request) {
+        return accountService.transferBalance(request);
     }
 }
