@@ -11,6 +11,7 @@ import com.vbank.account.entity.Account;
 import com.vbank.account.enums.AccountStatus;
 import com.vbank.account.exception.BadRequestException;
 import com.vbank.account.exception.ResourceNotFoundException;
+import com.vbank.account.mapper.AccountMapper;
 import com.vbank.account.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,27 +27,18 @@ import java.util.concurrent.ThreadLocalRandom;
 public class AccountService {
 
     private final AccountRepository accountRepository;
+    private final AccountMapper accountMapper;
 
     public CreateAccountResponseDTO createAccount(CreateAccountRequestDTO request) {
-        Account account = new Account();
-
-        account.setUserId(request.getUserId());
-        account.setAccountType(request.getAccountType());
-        account.setBalance(request.getInitialBalance());
+        Account account = accountMapper.toEntity(request);
         account.setStatus(AccountStatus.ACTIVE);
         String accountNumber = String.valueOf(
                 ThreadLocalRandom.current()
                         .nextLong(1000000000L, 9999999999L));
 
         account.setAccountNumber(accountNumber);
-
         Account savedAccount = accountRepository.save(account);
-
-        return new CreateAccountResponseDTO(
-                savedAccount.getId(),
-                savedAccount.getAccountNumber(),
-                "Account created successfully."
-        );
+        return accountMapper.toCreateAccountResponse(savedAccount);
     }
 
     public AccountResponseDTO getAccountById(UUID accountId) {
@@ -54,13 +46,7 @@ public class AccountService {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
 
-        return new AccountResponseDTO(
-                account.getId(),
-                account.getAccountNumber(),
-                account.getAccountType(),
-                account.getBalance(),
-                account.getStatus()
-        );
+        return accountMapper.toAccountResponse(account);
     }
 
     public List<AccountSummaryDTO> getAccountsByUserId(UUID userId) {
@@ -72,13 +58,7 @@ public class AccountService {
         }
 
         return accounts.stream()
-                .map(account -> new AccountSummaryDTO(
-                        account.getId(),
-                        account.getAccountNumber(),
-                        account.getAccountType(),
-                        account.getBalance(),
-                        account.getStatus()
-                ))
+                .map(accountMapper::toAccountSummary)
                 .toList();
     }
 
