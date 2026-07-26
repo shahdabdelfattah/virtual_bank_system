@@ -8,6 +8,7 @@ import com.vbank.account.dto.response.AccountSummaryDTO;
 import com.vbank.account.dto.response.CreateAccountResponseDTO;
 import com.vbank.account.dto.response.MessageResponseDTO;
 import com.vbank.account.service.AccountService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +25,7 @@ public class AccountController {
 
     @PostMapping("/accounts")
     @ResponseStatus(HttpStatus.CREATED)
-    public CreateAccountResponseDTO createAccount( @RequestBody CreateAccountRequestDTO request) {
+    public CreateAccountResponseDTO createAccount( @Valid @RequestBody CreateAccountRequestDTO request) {
         return accountService.createAccount(request);
     }
 
@@ -39,7 +40,7 @@ public class AccountController {
     }
 
     @PutMapping("/accounts/transfer")
-    public MessageResponseDTO transferBalance( @RequestBody TransferRequestDTO request) {
+    public MessageResponseDTO transferBalance( @Valid @RequestBody TransferRequestDTO request) {
         return accountService.transferBalance(request);
     }
 }

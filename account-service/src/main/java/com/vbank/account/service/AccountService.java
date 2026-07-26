@@ -9,6 +9,8 @@ import com.vbank.account.dto.response.CreateAccountResponseDTO;
 import com.vbank.account.dto.response.MessageResponseDTO;
 import com.vbank.account.entity.Account;
 import com.vbank.account.enums.AccountStatus;
+import com.vbank.account.exception.BadRequestException;
+import com.vbank.account.exception.ResourceNotFoundException;
 import com.vbank.account.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -50,7 +52,7 @@ public class AccountService {
     public AccountResponseDTO getAccountById(UUID accountId) {
 
         Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new RuntimeException("Account not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
 
         return new AccountResponseDTO(
                 account.getId(),
@@ -66,7 +68,7 @@ public class AccountService {
         List<Account> accounts = accountRepository.findByUserId(userId);
 
         if (accounts.isEmpty()) {
-            throw new RuntimeException("No accounts found for this user.");
+            throw new ResourceNotFoundException("No accounts found for this user.");
         }
 
         return accounts.stream()
@@ -84,22 +86,22 @@ public class AccountService {
     public MessageResponseDTO transferBalance(TransferRequestDTO request) {
 
         Account fromAccount = accountRepository.findById(request.getFromAccountId())
-                .orElseThrow(() -> new RuntimeException("Sender account not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Sender account not found"));
 
         Account toAccount = accountRepository.findById(request.getToAccountId())
-                .orElseThrow(() -> new RuntimeException("Receiver account not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Receiver account not found"));
 
         if (fromAccount.getBalance().compareTo(request.getAmount()) < 0) {
-            throw new RuntimeException("Insufficient balance");
+            throw new BadRequestException("Insufficient balance");
         }
 
         if (request.getFromAccountId().equals(request.getToAccountId())) {
-            throw new RuntimeException("Cannot transfer to the same account.");
+            throw new BadRequestException("Cannot transfer to the same account.");
         }
 
         if (fromAccount.getStatus() != AccountStatus.ACTIVE ||
                 toAccount.getStatus() != AccountStatus.ACTIVE) {
-            throw new RuntimeException("Transfers are allowed only between active accounts.");
+            throw new BadRequestException("Transfers are allowed only between active accounts.");
         }
 
         fromAccount.setBalance(
