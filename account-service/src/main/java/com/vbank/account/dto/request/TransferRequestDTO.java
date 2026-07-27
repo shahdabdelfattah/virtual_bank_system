@@ -15,7 +15,6 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class TransferRequestDTO {
 
     @NotNull(message = "From account ID is required")

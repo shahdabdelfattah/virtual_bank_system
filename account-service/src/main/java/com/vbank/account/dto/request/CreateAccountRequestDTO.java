@@ -16,7 +16,6 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class CreateAccountRequestDTO {
 
     @NotNull(message = "User ID is required")
