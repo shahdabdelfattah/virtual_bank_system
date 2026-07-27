@@ -1,6 +1,8 @@
 package com.vbank.transaction.client;
 
+import com.vbank.transaction.dto.request.AccountTransferRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -13,13 +15,24 @@ public class AccountServiceClient {
 
     private final WebClient webClient;
 
+    public void transfer(
+            UUID fromAccountId,
+            UUID toAccountId,
+            BigDecimal amount
+    ) {
 
-    //wait for salma
-    public void debit(UUID accountId, BigDecimal amount) {
-        throw new UnsupportedOperationException("Account Service not implemented yet.");
-    }
+        AccountTransferRequest request = new AccountTransferRequest(
+                fromAccountId,
+                toAccountId,
+                amount
+        );
 
-    public void credit(UUID accountId, BigDecimal amount) {
-        throw new UnsupportedOperationException("Account Service not implemented yet.");
+        webClient.put()
+                .uri("/accounts/transfer")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(request)
+                .retrieve()
+                .toBodilessEntity()
+                .block();
     }
 }
