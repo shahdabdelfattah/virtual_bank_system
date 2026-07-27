@@ -41,7 +41,9 @@ public class SecurityConfig {
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
                     "/swagger-ui.html",
-                    "/error"
+                    "/error",
+//                        for bff testing
+                        "/users/*/profile"
                 ).permitAll()
                 // All other endpoints require a valid JWT
                 .anyRequest().authenticated()
