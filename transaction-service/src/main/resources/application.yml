@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: transaction-service
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
+
+server:
+  port: ${TRANSACTION_SERVICE_PORT}
+
+account-service:
+  base-url: ${ACCOUNT_SERVICE_BASE_URL}
+
+logging-service:
+  kafka-topic: ${LOGGING_TOPIC}
