@@ -6,19 +6,11 @@ services:
     container_name: vbank-postgres
 
     ports:
-#      host : container
       - "${POSTGRES_PORT}:5432"
 
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
 
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -27,6 +19,12 @@ services:
     networks:
       - vbank-network
 
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   kafka:
     image: apache/kafka:4.0.0
@@ -39,14 +37,19 @@ services:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
       KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+
+    networks:
+      - vbank-network
+
+    restart: unless-stopped
 
     healthcheck:
       test: [ "CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1" ]
@@ -54,22 +57,17 @@ services:
       timeout: 10s
       retries: 10
 
-    networks:
-      - vbank-network
-
-    restart: unless-stopped
-
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     container_name: vbank-kafka-ui
 
+    ports:
+      - "${KAFKA_UI_PORT}:8080"
+
     depends_on:
       kafka:
         condition: service_healthy
-
-    ports:
-      - "${KAFKA_UI_PORT}:8080"
 
     environment:
       KAFKA_CLUSTERS_0_NAME: Virtual Bank
@@ -80,65 +78,132 @@ services:
 
     restart: unless-stopped
 
+
   user-service:
     build:
       context: ./user-service
-      dockerfile: Dockerfile
+
     container_name: vbank-user-service
+
     ports:
-      - "8081:8081"
+      - "${USER_SERVICE_PORT}:8081"
+
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/userdb
-      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
-      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
-      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      USER_SERVICE_PORT: ${USER_SERVICE_PORT}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${USER_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      LOGGING_TOPIC: ${LOGGING_TOPIC}
+
     depends_on:
       postgres:
         condition: service_healthy
       kafka:
         condition: service_healthy
+
     networks:
       - vbank-network
-    restart: unless-stopped
-  bff-service:
+
+  logging-service:
     build:
-      context: ./bff-service
-    container_name: vbank-bff-service
+      context: ./logging-service
+
+    container_name: vbank-logging-service
+
     ports:
-      - "8086:8086"
+      - "${LOGGING_SERVICE_PORT}:8082"
+
     environment:
-      USER_SERVICE_BASE_URL: http://user-service:8081
-      ACCOUNT_SERVICE_BASE_URL: http://account-service:8082
-      TRANSACTION_SERVICE_BASE_URL: http://transaction-service:8083
+      LOGGING_SERVICE_PORT: ${LOGGING_SERVICE_PORT}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${LOGGING_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      LOGGING_TOPIC: ${LOGGING_TOPIC}
+
     depends_on:
-      - user-service
-      - account-service
-      - transaction-service
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+    networks:
+      - vbank-network
+
+  account-service:
+    build:
+      context: ./account-service
+
+    container_name: vbank-account-service
+
+    ports:
+      - "${ACCOUNT_SERVICE_PORT}:8087"
+
+    environment:
+      ACCOUNT_SERVICE_PORT: ${ACCOUNT_SERVICE_PORT}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${ACCOUNT_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
     networks:
       - vbank-network
 
   transaction-service:
     build:
       context: ./transaction-service
+
     container_name: vbank-transaction-service
 
     ports:
-      - "8083:8083"
+      - "${TRANSACTION_SERVICE_PORT}:8083"
 
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/transaction_db
+      TRANSACTION_SERVICE_PORT: ${TRANSACTION_SERVICE_PORT}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${TRANSACTION_DB}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
-
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-
-      ACCOUNT_SERVICE_BASE_URL: http://account-service:8082
+      ACCOUNT_SERVICE_BASE_URL: http://account-service:8087
+      LOGGING_TOPIC: ${LOGGING_TOPIC}
 
     depends_on:
       postgres:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      account-service:
+        condition: service_started
+
+    networks:
+      - vbank-network
+
+  bff-service:
+    build:
+      context: ./bff-service
+
+    container_name: vbank-bff-service
+
+    ports:
+      - "${BFF_SERVICE_PORT}:8086"
+
+    environment:
+      BFF_SERVICE_PORT: ${BFF_SERVICE_PORT}
+      USER_SERVICE_BASE_URL: http://user-service:8081
+      ACCOUNT_SERVICE_BASE_URL: http://account-service:8087
+      TRANSACTION_SERVICE_BASE_URL: http://transaction-service:8083
+
+    depends_on:
+      user-service:
+        condition: service_started
+      account-service:
+        condition: service_started
+      transaction-service:
+        condition: service_started
 
     networks:
       - vbank-network
@@ -146,8 +211,6 @@ services:
 volumes:
   postgres_data:
 
-
 networks:
   vbank-network:
     driver: bridge
-

@@ -1,4 +1,4 @@
 CREATE DATABASE transaction_db;
-CREATE DATABASE notification_db;
-CREATE DATABASE userdb;
-CREATE DATABASE loggingdb;
+CREATE DATABASE user_db;
+CREATE DATABASE logging_db;
+CREATE DATABASE accounts_db;
