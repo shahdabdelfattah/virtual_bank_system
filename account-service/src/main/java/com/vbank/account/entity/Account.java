@@ -44,6 +44,9 @@ public class Account {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
+    @Column(name = "last_transaction_at")
+    private LocalDateTime lastTransactionAt;
+
     @PrePersist
     public void onCreate() {
         createdAt = LocalDateTime.now();

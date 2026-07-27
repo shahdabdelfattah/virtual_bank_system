@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
@@ -30,15 +31,34 @@ public class AccountService {
     private final AccountMapper accountMapper;
 
     public CreateAccountResponseDTO createAccount(CreateAccountRequestDTO request) {
-        Account account = accountMapper.toEntity(request);
-        account.setStatus(AccountStatus.ACTIVE);
-        String accountNumber = String.valueOf(
-                ThreadLocalRandom.current()
-                        .nextLong(1000000000L, 9999999999L));
 
-        account.setAccountNumber(accountNumber);
+        if (request.getInitialBalance().compareTo(BigDecimal.ZERO) < 0) {
+            throw new BadRequestException("Initial balance cannot be negative.");
+        }
+
+        Account account = accountMapper.toEntity(request);
+
+        account.setAccountNumber(generateAccountNumber());
+        account.setLastTransactionAt(LocalDateTime.now());
+
         Account savedAccount = accountRepository.save(account);
+
         return accountMapper.toCreateAccountResponse(savedAccount);
+    }
+
+    //helper function for createAccount()
+    private String generateAccountNumber() {
+
+        String accountNumber;
+
+        do {
+            accountNumber = String.valueOf(
+                    ThreadLocalRandom.current()
+                            .nextLong(1_000_000_000L, 10_000_000_000L)
+            );
+        } while (accountRepository.existsByAccountNumber(accountNumber));
+
+        return accountNumber;
     }
 
     public AccountResponseDTO getAccountById(UUID accountId) {
@@ -91,7 +111,8 @@ public class AccountService {
         toAccount.setBalance(
                 toAccount.getBalance().add(request.getAmount())
         );
-
+        fromAccount.setLastTransactionAt(LocalDateTime.now());
+        toAccount.setLastTransactionAt(LocalDateTime.now());
         accountRepository.save(fromAccount);
         accountRepository.save(toAccount);
 
