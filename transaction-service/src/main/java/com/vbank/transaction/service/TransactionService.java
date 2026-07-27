@@ -51,14 +51,22 @@ public class TransactionService {
             throw new BusinessException("The transaction status is " + transaction.getStatus().name() + " so it cant be executed");
         }
 
-        // test what happens if debit done but credit no (salma)
-        accountServiceClient.debit(transaction.getFromAccountId(), transaction.getAmount());
-        accountServiceClient.credit(transaction.getToAccountId(), transaction.getAmount());
+        try {
+            accountServiceClient.transfer(
+                    transaction.getFromAccountId(),
+                    transaction.getToAccountId(),
+                    transaction.getAmount()
+            );
+            transaction.setStatus(TransactionStatus.SUCCESS);
 
-        // only if debit & credit done (salma)
-        transaction.setStatus(TransactionStatus.SUCCESS);
+        } catch (Exception ex) {
+            transaction.setStatus(TransactionStatus.FAILED);
+            transactionRepository.save(transaction);
 
+            throw ex;
+        }
         transaction = transactionRepository.save(transaction);
+
         return transactionMapper.toTransferExecutionResponse(transaction);
     }
 
