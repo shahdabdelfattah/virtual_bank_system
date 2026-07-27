@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: bff-service
+
+server:
+  port: ${BFF_SERVICE_PORT}
+
+user-service:
+  base-url: ${USER_SERVICE_BASE_URL}
+
+account-service:
+  base-url: ${ACCOUNT_SERVICE_BASE_URL}
+
+transaction-service:
+  base-url: ${TRANSACTION_SERVICE_BASE_URL}
