@@ -325,7 +325,7 @@ docker compose down -v
 ---
 
 ## Authors
-- Alaa
-- Salma
+- Alaa Mostafa
+- Salma Mohamed Hafez
 - Shahd Ahmed Abdelfatah
 
