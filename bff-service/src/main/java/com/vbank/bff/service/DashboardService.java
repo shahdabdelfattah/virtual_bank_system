@@ -7,6 +7,8 @@ import com.vbank.bff.dto.response.AccountDashboardResponse;
 import com.vbank.bff.dto.response.DashboardResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.UUID;
@@ -21,35 +23,37 @@ public class DashboardService {
 
     public DashboardResponse getDashboard(UUID userId) {
 
-        var user = userServiceClient.getProfile(userId);
-        var accounts = accountServiceClient.getAccounts(userId);
+        Mono<DashboardResponse> dashboardMono = userServiceClient.getProfile(userId)
+                .zipWith(accountServiceClient.getAccounts(userId))
+                .flatMap(tuple -> {
+                    var user = tuple.getT1();
+                    var accounts = tuple.getT2();
 
-        var dashboardAccounts = accounts.stream()
-                .map(account -> {
+                    Mono<List<AccountDashboardResponse>> accountsWithTx =
+                            Flux.fromIterable(accounts)
+                                    .flatMap(account ->
+                                            transactionServiceClient.getTransactions(account.accountId())
+                                                    .map(transactions -> new AccountDashboardResponse(
+                                                            account.accountId(),
+                                                            account.accountNumber(),
+                                                            account.accountType(),
+                                                            account.balance(),
+                                                            account.status(),
+                                                            transactions
+                                                    ))
+                                    )
+                                    .collectList();
 
-                    var transactions =
-                            transactionServiceClient.getTransactions(account.accountId());
+                    return accountsWithTx.map(dashboardAccounts -> new DashboardResponse(
+                            user.userId(),
+                            user.username(),
+                            user.email(),
+                            user.firstName(),
+                            user.lastName(),
+                            dashboardAccounts
+                    ));
+                });
 
-                    return new AccountDashboardResponse(
-                            account.accountId(),
-                            account.accountNumber(),
-                            account.accountType(),
-                            account.balance(),
-                            account.status(),
-                            transactions
-                    );
-                })
-                .toList();
-
-        return new DashboardResponse(
-                user.userId(),
-                user.username(),
-                user.email(),
-                user.firstName(),
-                user.lastName(),
-                dashboardAccounts
-        );
+        return dashboardMono.block();
     }
-
-    // NOT Complete wait for account service (salma)
 }

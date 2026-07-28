@@ -2,10 +2,10 @@ package com.vbank.bff.client;
 
 import com.vbank.bff.dto.response.AccountResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestClient;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.UUID;
@@ -14,17 +14,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AccountServiceClient {
 
-    private final RestClient.Builder restClientBuilder;
+    private final WebClient accountServiceWebClient;
 
-    @Value("${account-service.base-url}")
-    private String accountServiceUrl;
-
-    public List<AccountResponse> getAccounts(UUID userId) {
-
-        return restClientBuilder.build()
-                .get()
-                .uri(accountServiceUrl + "/users/{userId}/accounts", userId)
+    public Mono<List<AccountResponse>> getAccounts(UUID userId) {
+        return accountServiceWebClient.get()
+                .uri("/users/{userId}/accounts", userId)
                 .retrieve()
-                .body(new ParameterizedTypeReference<>() {});
+                .bodyToMono(new ParameterizedTypeReference<>() {});
     }
 }
