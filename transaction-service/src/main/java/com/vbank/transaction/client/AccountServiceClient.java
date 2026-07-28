@@ -2,6 +2,7 @@ package com.vbank.transaction.client;
 
 import com.vbank.transaction.dto.request.AccountTransferRequest;
 import com.vbank.transaction.dto.response.AccountResponse;
+import com.vbank.transaction.dto.response.AccountSummaryResponse;
 import com.vbank.transaction.exception.BusinessException;
 import com.vbank.transaction.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -55,5 +57,24 @@ public class AccountServiceClient {
 
         } catch (WebClientResponseException.NotFound ex) {
             throw new ResourceNotFoundException("Account with id " + accountId + " not found.");        }
+    }
+
+    public AccountResponse getSystemAccount() {
+
+        return webClient.get()
+                .uri("/system-account")
+                .retrieve()
+                .bodyToMono(AccountResponse.class)
+                .block();
+    }
+
+    public List<AccountSummaryResponse> getActiveSavingsAccounts() {
+
+        return webClient.get()
+                .uri("/accounts/savings/active")
+                .retrieve()
+                .bodyToFlux(AccountSummaryResponse.class)
+                .collectList()
+                .block();
     }
 }
