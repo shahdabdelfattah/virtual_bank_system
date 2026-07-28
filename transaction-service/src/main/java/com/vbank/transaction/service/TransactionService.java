@@ -3,6 +3,7 @@ package com.vbank.transaction.service;
 import com.vbank.transaction.client.AccountServiceClient;
 import com.vbank.transaction.dto.request.TransferExecutionRequest;
 import com.vbank.transaction.dto.request.TransferInitiationRequest;
+import com.vbank.transaction.dto.response.AccountResponse;
 import com.vbank.transaction.dto.response.TransactionHistoryResponse;
 import com.vbank.transaction.dto.response.TransferExecutionResponse;
 import com.vbank.transaction.dto.response.TransferInitiationResponse;
@@ -32,6 +33,13 @@ public class TransactionService {
     ){
         if (request.fromAccountId().equals(request.toAccountId())) {
             throw new BusinessException("Sender and receiver accounts cannot be the same.");
+        }
+
+        AccountResponse sender = accountServiceClient.getAccount(request.fromAccountId());
+        AccountResponse receiver = accountServiceClient.getAccount(request.toAccountId());
+
+        if (sender.balance().compareTo(request.amount()) < 0) {
+            throw new BusinessException("Insufficient balance.");
         }
 
         Transaction transaction = transactionMapper.toEntity(request);

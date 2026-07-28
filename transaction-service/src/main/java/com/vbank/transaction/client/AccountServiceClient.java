@@ -1,10 +1,13 @@
 package com.vbank.transaction.client;
 
 import com.vbank.transaction.dto.request.AccountTransferRequest;
+import com.vbank.transaction.dto.response.AccountResponse;
+import com.vbank.transaction.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -34,5 +37,19 @@ public class AccountServiceClient {
                 .retrieve()
                 .toBodilessEntity()
                 .block();
+    }
+
+    public AccountResponse getAccount(UUID accountId) {
+
+        try {
+            return webClient.get()
+                    .uri("/accounts/{id}", accountId)
+                    .retrieve()
+                    .bodyToMono(AccountResponse.class)
+                    .block();
+
+        } catch (WebClientResponseException.NotFound ex) {
+            throw new ResourceNotFoundException("Account not found.");
+        }
     }
 }
