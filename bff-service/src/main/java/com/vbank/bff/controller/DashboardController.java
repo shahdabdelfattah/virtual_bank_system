@@ -16,8 +16,9 @@ public class DashboardController {
 
     @GetMapping("/dashboard/{userId}")
     public DashboardResponse getDashboard(
-            @PathVariable UUID userId
+            @PathVariable UUID userId,
+            @RequestHeader("Authorization") String authHeader
     ) {
-        return dashboardService.getDashboard(userId);
+        return dashboardService.getDashboard(userId, authHeader);
     }
 }

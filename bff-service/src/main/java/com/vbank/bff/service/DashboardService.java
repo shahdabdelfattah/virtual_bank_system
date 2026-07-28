@@ -21,9 +21,9 @@ public class DashboardService {
     private final AccountServiceClient accountServiceClient;
     private final TransactionServiceClient transactionServiceClient;
 
-    public DashboardResponse getDashboard(UUID userId) {
+    public DashboardResponse getDashboard(UUID userId, String auth) {
 
-        Mono<DashboardResponse> dashboardMono = userServiceClient.getProfile(userId)
+        Mono<DashboardResponse> dashboardMono = userServiceClient.getProfile(userId, auth)
                 .zipWith(accountServiceClient.getAccounts(userId))
                 .flatMap(tuple -> {
                     var user = tuple.getT1();
