@@ -37,18 +37,23 @@ public class RequestResponseLoggingFilter extends OncePerRequestFilter {
             return;
         }
 
-        ContentCachingRequestWrapper requestWrapper = new ContentCachingRequestWrapper(request);
+        ContentCachingRequestWrapper requestWrapper = new ContentCachingRequestWrapper(request, 8192);
         ContentCachingResponseWrapper responseWrapper = new ContentCachingResponseWrapper(response);
+        String reqId = java.util.UUID.randomUUID().toString().substring(0, 8);
 
         try {
             filterChain.doFilter(requestWrapper, responseWrapper);
         } finally {
             try {
                 String requestBody = getRequestBody(requestWrapper);
-                sendLog(requestBody, "Request");
+                String reqMessage = String.format("[ReqID: %s] %s %s - Body: %s", 
+                        reqId, request.getMethod(), path, requestBody.isEmpty() ? "[Empty Body]" : requestBody);
+                sendLog(reqMessage, "Request");
 
                 String responseBody = getResponseBody(responseWrapper);
-                sendLog(responseBody, "Response");
+                String resMessage = String.format("[ReqID: %s] Status: %d - Body: %s", 
+                        reqId, response.getStatus(), responseBody.isEmpty() ? "[Empty Body]" : responseBody);
+                sendLog(resMessage, "Response");
             } catch (Exception e) {
                 logger.error("Failed to generate or send Kafka logs", e);
             }
