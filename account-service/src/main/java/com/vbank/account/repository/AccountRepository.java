@@ -1,6 +1,8 @@
 package com.vbank.account.repository;
 
 import com.vbank.account.entity.Account;
+import com.vbank.account.enums.AccountStatus;
+import com.vbank.account.enums.AccountType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -26,4 +28,9 @@ public interface AccountRepository extends JpaRepository<Account, UUID> {
             """)
     List<Account> findInactiveAccounts( @Param("cutoff") LocalDateTime cutoff);
 
+    List<Account> findByStatusAndAccountType(AccountStatus status, AccountType accountType);
+
+    boolean existsByAccountType(AccountType accountType);
+
+    Optional<Account> findByAccountType(AccountType accountType);
 }

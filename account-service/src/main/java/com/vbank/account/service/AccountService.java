@@ -9,6 +9,7 @@ import com.vbank.account.dto.response.CreateAccountResponseDTO;
 import com.vbank.account.dto.response.MessageResponseDTO;
 import com.vbank.account.entity.Account;
 import com.vbank.account.enums.AccountStatus;
+import com.vbank.account.enums.AccountType;
 import com.vbank.account.exception.BadRequestException;
 import com.vbank.account.exception.ResourceNotFoundException;
 import com.vbank.account.mapper.AccountMapper;
@@ -117,5 +118,26 @@ public class AccountService {
         accountRepository.save(toAccount);
 
         return new MessageResponseDTO("Account updated successfully.");
+    }
+
+    public List<AccountSummaryDTO> getActiveSavingsAccounts() {
+
+        List<Account> accounts = accountRepository.findByStatusAndAccountType(
+                AccountStatus.ACTIVE,
+                AccountType.SAVINGS
+        );
+
+        return accounts.stream()
+                .map(accountMapper::toAccountSummary)
+                .toList();
+    }
+
+    public AccountResponseDTO getSystemAccount() {
+
+        Account account = accountRepository.findByAccountType(AccountType.SYSTEM)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("System account not found."));
+
+        return accountMapper.toAccountResponse(account);
     }
 }
