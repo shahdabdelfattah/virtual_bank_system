@@ -153,6 +153,7 @@ services:
     networks:
       - vbank-network
 
+
   transaction-service:
     build:
       context: ./transaction-service
@@ -208,8 +209,27 @@ services:
     networks:
       - vbank-network
 
+  wso2am:
+    image: wso2/wso2am:4.4.0
+
+    container_name: vbank-wso2am
+
+    ports:
+      - "9443:9443"
+      - "8243:8243"
+      - "8280:8280"
+
+    networks:
+      - vbank-network
+
+    restart: unless-stopped
+
+    volumes:
+      - wso2_data:/home/wso2carbon/wso2am-4.4.0/repository
+
 volumes:
   postgres_data:
+  wso2_data:
 
 networks:
   vbank-network:
