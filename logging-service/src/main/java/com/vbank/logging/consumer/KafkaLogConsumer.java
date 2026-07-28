@@ -14,11 +14,10 @@ public class KafkaLogConsumer {
 
     private static final Logger log = LoggerFactory.getLogger(KafkaLogConsumer.class);
     private final LogRepository logRepository;
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public KafkaLogConsumer(LogRepository logRepository, ObjectMapper objectMapper) {
+    public KafkaLogConsumer(LogRepository logRepository) {
         this.logRepository = logRepository;
-        this.objectMapper = objectMapper;
     }
 
     @KafkaListener(topics = "${logging.topic}", groupId = "${spring.kafka.consumer.group-id:logging-group}")

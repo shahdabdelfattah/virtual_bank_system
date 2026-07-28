@@ -20,11 +20,10 @@ import java.util.Map;
 public class RequestResponseLoggingFilter extends OncePerRequestFilter {
 
     private final KafkaLogProducer kafkaLogProducer;
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public RequestResponseLoggingFilter(KafkaLogProducer kafkaLogProducer, ObjectMapper objectMapper) {
+    public RequestResponseLoggingFilter(KafkaLogProducer kafkaLogProducer) {
         this.kafkaLogProducer = kafkaLogProducer;
-        this.objectMapper = objectMapper;
     }
 
     @Override
