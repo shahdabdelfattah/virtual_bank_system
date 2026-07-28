@@ -2,6 +2,7 @@ package com.vbank.transaction.client;
 
 import com.vbank.transaction.dto.request.AccountTransferRequest;
 import com.vbank.transaction.dto.response.AccountResponse;
+import com.vbank.transaction.exception.BusinessException;
 import com.vbank.transaction.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -30,17 +31,21 @@ public class AccountServiceClient {
                 amount
         );
 
-        webClient.put()
-                .uri("/accounts/transfer")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(request)
-                .retrieve()
-                .toBodilessEntity()
-                .block();
+        try {
+            webClient.put()
+                    .uri("/accounts/transfer")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(request)
+                    .retrieve()
+                    .toBodilessEntity()
+                    .block();
+
+        } catch (WebClientResponseException.BadRequest ex) {
+            throw new BusinessException(ex.getResponseBodyAsString());
+        }
     }
 
     public AccountResponse getAccount(UUID accountId) {
-
         try {
             return webClient.get()
                     .uri("/accounts/{id}", accountId)
@@ -49,7 +54,6 @@ public class AccountServiceClient {
                     .block();
 
         } catch (WebClientResponseException.NotFound ex) {
-            throw new ResourceNotFoundException("Account not found.");
-        }
+            throw new ResourceNotFoundException("Account with id " + accountId + " not found.");        }
     }
 }
