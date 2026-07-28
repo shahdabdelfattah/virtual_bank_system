@@ -2,15 +2,15 @@ package com.vbank.transaction.client;
 
 import com.vbank.transaction.dto.request.AccountTransferRequest;
 import com.vbank.transaction.dto.response.AccountResponse;
-import com.vbank.transaction.dto.response.AccountSummaryResponse;
+import com.vbank.transaction.exception.BusinessException;
+import com.vbank.transaction.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -31,31 +31,29 @@ public class AccountServiceClient {
                 amount
         );
 
-        webClient.put()
-                .uri("/accounts/transfer")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(request)
-                .retrieve()
-                .toBodilessEntity()
-                .block();
+        try {
+            webClient.put()
+                    .uri("/accounts/transfer")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(request)
+                    .retrieve()
+                    .toBodilessEntity()
+                    .block();
+
+        } catch (WebClientResponseException.BadRequest ex) {
+            throw new BusinessException(ex.getResponseBodyAsString());
+        }
     }
 
-    public AccountResponse getSystemAccount() {
+    public AccountResponse getAccount(UUID accountId) {
+        try {
+            return webClient.get()
+                    .uri("/accounts/{id}", accountId)
+                    .retrieve()
+                    .bodyToMono(AccountResponse.class)
+                    .block();
 
-        return webClient.get()
-                .uri("/system-account")
-                .retrieve()
-                .bodyToMono(AccountResponse.class)
-                .block();
-    }
-
-    public List<AccountSummaryResponse> getActiveSavingsAccounts() {
-
-        return webClient.get()
-                .uri("/accounts/savings/active")
-                .retrieve()
-                .bodyToFlux(AccountSummaryResponse.class)
-                .collectList()
-                .block();
+        } catch (WebClientResponseException.NotFound ex) {
+            throw new ResourceNotFoundException("Account with id " + accountId + " not found.");        }
     }
 }
