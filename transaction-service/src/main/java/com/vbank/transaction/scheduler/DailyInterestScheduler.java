@@ -11,7 +11,7 @@ public class DailyInterestScheduler {
 
     private final InterestService interestService;
 
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "0 0 0 * * *")
     public void processDailyInterest() {
         interestService.processDailyInterest();
     }

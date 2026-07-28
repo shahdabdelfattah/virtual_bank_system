@@ -29,6 +29,16 @@ public class AccountController {
         return accountService.createAccount(request);
     }
 
+    @GetMapping("/accounts/savings/active")
+    public List<AccountSummaryDTO> getActiveSavingsAccounts() {
+        return accountService.getActiveSavingsAccounts();
+    }
+
+    @GetMapping("/system-account")
+    public AccountResponseDTO getSystemAccount() {
+        return accountService.getSystemAccount();
+    }
+
     @GetMapping("/accounts/{accountId}")
     public AccountResponseDTO getAccountById( @PathVariable UUID accountId) {
         return accountService.getAccountById(accountId);
