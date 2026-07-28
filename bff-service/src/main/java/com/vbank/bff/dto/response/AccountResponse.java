@@ -5,7 +5,6 @@ import java.util.UUID;
 
 public record AccountResponse(
 
-        // wait for salma
         UUID accountId,
         String accountNumber,
         String accountType,

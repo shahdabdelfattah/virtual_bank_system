@@ -2,10 +2,9 @@ package com.vbank.bff.client;
 
 import com.vbank.bff.dto.response.UserProfileResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestClient;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
@@ -13,17 +12,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserServiceClient {
 
-    private final RestClient.Builder restClientBuilder;
+    private final WebClient userServiceWebClient;
 
-    @Value("${user-service.base-url}")
-    private String baseUrl;
-
-    public UserProfileResponse getProfile(UUID userId) {
-
-        return restClientBuilder.build()
-                .get()
-                .uri(baseUrl + "/users/{userId}/profile", userId)
+    public Mono<UserProfileResponse> getProfile(UUID userId) {
+        return userServiceWebClient.get()
+                .uri("/users/{userId}/profile", userId)
                 .retrieve()
-                .body(UserProfileResponse.class);
+                .bodyToMono(UserProfileResponse.class);
     }
 }
