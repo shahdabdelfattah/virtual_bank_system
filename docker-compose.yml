@@ -153,6 +153,7 @@ services:
     networks:
       - vbank-network
 
+
   transaction-service:
     build:
       context: ./transaction-service
