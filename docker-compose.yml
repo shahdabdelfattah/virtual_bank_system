@@ -96,6 +96,9 @@ services:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       LOGGING_TOPIC: ${LOGGING_TOPIC}
 
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRY: ${JWT_EXPIRY}
+
     depends_on:
       postgres:
         condition: service_healthy
