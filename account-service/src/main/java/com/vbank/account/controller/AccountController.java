@@ -7,12 +7,15 @@ import com.vbank.account.dto.response.AccountResponseDTO;
 import com.vbank.account.dto.response.AccountSummaryDTO;
 import com.vbank.account.dto.response.CreateAccountResponseDTO;
 import com.vbank.account.dto.response.MessageResponseDTO;
+import com.vbank.account.kafka.model.LogMessage;
+import com.vbank.account.kafka.producer.LoggingProducer;
 import com.vbank.account.service.AccountService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,6 +25,7 @@ import java.util.UUID;
 public class AccountController {
 
     private final AccountService accountService;
+    private final LoggingProducer loggingProducer;
 
     @PostMapping("/accounts")
     @ResponseStatus(HttpStatus.CREATED)
@@ -52,5 +56,19 @@ public class AccountController {
     @PutMapping("/accounts/transfer")
     public MessageResponseDTO transferBalance( @Valid @RequestBody TransferRequestDTO request) {
         return accountService.transferBalance(request);
+    }
+
+    @GetMapping("/test-kafka")
+    public String testKafka() {
+
+        LogMessage log = LogMessage.builder()
+                .message("Hello from Account Service")
+                .messageType("Request")
+                .dateTime(LocalDateTime.now())
+                .build();
+
+        loggingProducer.send(log);
+
+        return "Message sent";
     }
 }
