@@ -16,5 +16,14 @@ spring:
       hibernate:
         format_sql: true
 
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
+
 server:
   port: ${ACCOUNT_SERVICE_PORT}
+
+user-service:
+  base-url: ${USER_SERVICE_BASE_URL}
+
+logging-service:
+  kafka-topic: ${LOGGING_TOPIC}

@@ -1,6 +1,7 @@
 package com.vbank.account.service;
 
 
+import com.vbank.account.client.UserServiceClient;
 import com.vbank.account.dto.request.CreateAccountRequestDTO;
 import com.vbank.account.dto.request.TransferRequestDTO;
 import com.vbank.account.dto.response.AccountResponseDTO;
@@ -30,12 +31,15 @@ public class AccountService {
 
     private final AccountRepository accountRepository;
     private final AccountMapper accountMapper;
+    private final UserServiceClient userServiceClient;
 
-    public CreateAccountResponseDTO createAccount(CreateAccountRequestDTO request) {
+    public CreateAccountResponseDTO createAccount(CreateAccountRequestDTO request,String authorizationHeader) {
 
         if (request.getInitialBalance().compareTo(BigDecimal.ZERO) < 0) {
             throw new BadRequestException("Initial balance cannot be negative.");
         }
+
+        userServiceClient.validateUserExists(request.getUserId(), authorizationHeader);
 
         Account account = accountMapper.toEntity(request);
 

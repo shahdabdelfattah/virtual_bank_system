@@ -148,10 +148,17 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${ACCOUNT_DB}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      USER_SERVICE_BASE_URL: http://user-service:8081
+      LOGGING_TOPIC: ${LOGGING_TOPIC}
 
     depends_on:
       postgres:
         condition: service_healthy
+      kafka:
+        condition: service_healthy
+      user-service:
+        condition: service_started
 
     networks:
       - vbank-network
