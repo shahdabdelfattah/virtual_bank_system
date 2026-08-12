@@ -22,5 +22,8 @@ spring:
 server:
   port: ${ACCOUNT_SERVICE_PORT:8087}
 
+user-service:
+  base-url: ${USER_SERVICE_BASE_URL}
+
 logging-service:
   kafka-topic: ${LOGGING_TOPIC:vbank-logs}

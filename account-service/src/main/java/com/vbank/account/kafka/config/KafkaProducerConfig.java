@@ -20,6 +20,7 @@ public class KafkaProducerConfig {
 
     @Bean
     public ProducerFactory<String, String> producerFactory() {
+
         Map<String, Object> config = new HashMap<>();
 
         config.put(
